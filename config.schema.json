@@ -25,6 +25,11 @@
         "title": "Cron",
         "type": "string",
         "description": "Cron string"
+      },
+      "duration": {
+        "title": "Duration",
+        "type": "number",
+        "description": "Duration, in seconds, defaults to 1"
       }
     }
   }
