@@ -24,6 +24,7 @@ class ScheduleAccessory implements AccessoryPlugin {
 
   private readonly switchService: Service;
   private readonly informationService: Service;
+  private readonly sensorService: Service;
 
   private readonly objectOperations: ObjectOperations;
 
@@ -38,6 +39,7 @@ class ScheduleAccessory implements AccessoryPlugin {
     log.debug(`Name: [${config.name}]`);
     log.debug(`Interval: [${config.interval}]`);
     log.debug(`Cron: [${config.cron}]`);
+    log.debug(`Duration: [${config.duration}]`);
     log.debug(`Serial: [${config.serial}]`);
 
     // determine what was provided by config
@@ -61,7 +63,9 @@ class ScheduleAccessory implements AccessoryPlugin {
 
     // create accessory
     log.info(`Creating schedule accessory [${config.name}]`);
-
+	
+	this.sensorService = new hap.Service.OccupancySensor(this.name + " Sensor");
+	
     this.switchService = new hap.Service.Switch(this.name);
 
     this.switchService
@@ -86,9 +90,15 @@ class ScheduleAccessory implements AccessoryPlugin {
           if (value) {
             setTimeout(() => {
               this.switchService.setCharacteristic('On', false);
-            }, 1000);
+            }, (config.duration ?? 1) * 1000);
           }
-
+		  
+		  this.sensorService.updateCharacteristic(
+            hap.Characteristic.OccupancyDetected,
+            	value
+              		? hap.Characteristic.OccupancyDetected.OCCUPANCY_DETECTED
+              		: hap.Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED);
+              		
           callback();
         },
       );
@@ -127,7 +137,7 @@ class ScheduleAccessory implements AccessoryPlugin {
    * It should return all services which should be added to the accessory.
    */
   getServices(): Service[] {
-    return [this.informationService, this.switchService];
+    return [this.informationService, this.switchService, this.sensorService];
   }
 }
 
